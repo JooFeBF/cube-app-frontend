@@ -1,19 +1,19 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { 
-  Table, 
-  TableBody, 
-  TableCaption, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useGetTournamentSolutionsQuery } from '@/services/solutionsApi';
-import { Solution, SolutionPenalty } from '@/services/solutionsApi';
+import { SolutionPenaltyEnum, useGetTournamentSolutionsQuery, useGetUserTournamentSolutionsQuery } from '@/services/solutionsApi';
+import { Solution } from '@/services/solutionsApi';
 import { User } from '@/services/usersApi';
 
 interface TournamentResultsProps {
@@ -31,38 +31,38 @@ interface ResultsWithStats {
 
 const formatTime = (milliseconds: number): string => {
   if (milliseconds === Infinity) return 'DNF';
-  
+
   const totalSeconds = Math.floor(milliseconds / 1000);
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
   const ms = Math.floor((milliseconds % 1000) / 10);
-  
+
   if (minutes > 0) {
     return `${minutes}:${seconds.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
   }
-  
+
   return `${seconds}.${ms.toString().padStart(2, '0')}`;
 };
 
 const calculateAverage = (solutions: Solution[]): number => {
   if (solutions.length === 0) return Infinity;
-  
+
   const validTimes = solutions
     .filter(sol => sol.penalty !== 'DNF')
     .map(sol => {
-      if (sol.penalty === 'PLUS_TWO') {
+      if (sol.penalty === SolutionPenaltyEnum.PLUS_TWO) {
         return sol.recordedTimeMs + 2000;
       }
       return sol.recordedTimeMs;
     });
-  
+
   if (validTimes.length < solutions.length - 1) {
     // More than one DNF means the average is DNF
     return Infinity;
   }
-  
+
   const sortedTimes = [...validTimes].sort((a, b) => a - b);
-  
+
   // If we have 5 solutions, remove best and worst
   if (solutions.length === 5) {
     // If exactly one DNF, it counts as the worst time
@@ -73,29 +73,30 @@ const calculateAverage = (solutions: Solution[]): number => {
       sortedTimes.pop();   // Remove worst time
     }
   }
-  
+
   const sum = sortedTimes.reduce((acc, time) => acc + time, 0);
   return sum / sortedTimes.length;
 };
 
 const getBestTime = (solutions: Solution[]): number => {
   if (solutions.length === 0) return Infinity;
-  
+
   const validTimes = solutions
-    .filter(sol => sol.penalty !== 'DNF')
+    .filter(sol => sol.penalty !== SolutionPenaltyEnum.DNF)
     .map(sol => {
-      if (sol.penalty === 'PLUS_TWO') {
+      if (sol.penalty === SolutionPenaltyEnum.PLUS_TWO) {
         return sol.recordedTimeMs + 2000;
       }
       return sol.recordedTimeMs;
     });
-  
+
   if (validTimes.length === 0) return Infinity;
   return Math.min(...validTimes);
 };
 
 export function TournamentResults({ tournamentId, participants }: TournamentResultsProps) {
   const { data: solutions, isLoading, error } = useGetTournamentSolutionsQuery(tournamentId);
+
   const [results, setResults] = useState<ResultsWithStats[]>([]);
 
   useEffect(() => {
@@ -103,27 +104,27 @@ export function TournamentResults({ tournamentId, participants }: TournamentResu
       // Group solutions by user
       const resultsByUser: Record<number, Solution[]> = {};
       participants.forEach(participant => {
-        resultsByUser[participant.id] = [];
+        resultsByUser[participant.userId] = [];
       });
-      
+
       solutions.forEach(solution => {
         if (resultsByUser[solution.userId]) {
           resultsByUser[solution.userId].push(solution);
         }
       });
-      
+
       // Calculate statistics for each user
       const processedResults: ResultsWithStats[] = participants.map(participant => {
-        const userSolutions = resultsByUser[participant.id] || [];
+        const userSolutions = resultsByUser[participant.userId] || [];
         return {
-          userId: participant.id,
+          userId: participant.userId,
           userName: participant.userName,
           solutions: userSolutions,
           average: calculateAverage(userSolutions),
           best: getBestTime(userSolutions)
         };
       });
-      
+
       // Sort by average (DNF last)
       processedResults.sort((a, b) => {
         if (a.average === Infinity && b.average === Infinity) return 0;
@@ -131,7 +132,7 @@ export function TournamentResults({ tournamentId, participants }: TournamentResu
         if (b.average === Infinity) return -1;
         return a.average - b.average;
       });
-      
+
       setResults(processedResults);
     }
   }, [solutions, participants]);
@@ -192,21 +193,21 @@ export function TournamentResults({ tournamentId, participants }: TournamentResu
                 <TableCell className="font-medium">{index + 1}</TableCell>
                 <TableCell>{result.userName}</TableCell>
                 {[0, 1, 2, 3, 4].map((solveIndex) => {
-                  const solution = result.solutions.find(s => s.scrambleId % 5 === solveIndex);
+                  const solution = result.solutions[solveIndex];
                   let timeDisplay = '—';
-                  
+
                   if (solution) {
-                    if (solution.penalty === 'DNF') {
+                    if (solution.penalty === SolutionPenaltyEnum.DNF) {
                       timeDisplay = 'DNF';
                     } else {
-                      const timeMs = solution.recordedTimeMs + (solution.penalty === 'PLUS_TWO' ? 2000 : 0);
+                      const timeMs = solution.recordedTimeMs + (solution.penalty === SolutionPenaltyEnum.PLUS_TWO ? 2000 : 0);
                       timeDisplay = formatTime(timeMs);
-                      if (solution.penalty === 'PLUS_TWO') {
+                      if (solution.penalty === SolutionPenaltyEnum.PLUS_TWO) {
                         timeDisplay += ' (+2)';
                       }
                     }
                   }
-                  
+
                   return <TableCell key={solveIndex}>{timeDisplay}</TableCell>;
                 })}
                 <TableCell className="font-semibold">

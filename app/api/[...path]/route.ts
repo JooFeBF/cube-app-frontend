@@ -4,8 +4,6 @@ import { NextRequest, NextResponse } from 'next/server';
 // Add your backend API URL here
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
 
-console.log(API_BASE_URL)
-
 export async function GET(
   request: NextRequest,
   { params }: { params: { path: string[] } }
@@ -37,27 +35,23 @@ export async function POST(
 ) {
   const path = params.path.join('/');
   const headers = new Headers(request.headers);
-  const body = await request.json();
+  let body;
 
   try {
-    console.log('Request body:', body);
-    console.log('Request headers:', headers);
-    console.log('Request URL:', request.url);
-    console.log('Request method:', request.method);
-    console.log(`${API_BASE_URL}/${path}`);
+    body = await request.json();
+  } catch (error) {
+  }
 
+  try {
     const response = await fetch(`${API_BASE_URL}/${path}`, {
       method: 'POST',
       headers,
       body: JSON.stringify(body),
     });
 
-    console.log('Response:', response);
-
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error('API proxy error:', error);
     return NextResponse.json(
       { message: 'Failed to post data to API' },
       { status: 500 }

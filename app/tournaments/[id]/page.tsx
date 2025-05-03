@@ -15,8 +15,9 @@ import {
   useUnregisterFromTournamentMutation,
   useGetTournamentRegistrationsQuery,
   useUpdateTournamentMutation,
-  Tournament
+  useGetTournamentAdminsQuery
 } from '@/services/tournamentsApi';
+import { TournamentConfigModal } from '@/components/tournaments/TournamentConfigModal';
 import { useGetAllUsersQuery, User } from '@/services/usersApi';
 import { useAppSelector } from '@/lib/hooks';
 import { selectIsAuthenticated } from '@/features/auth/authSlice';
@@ -41,27 +42,30 @@ export default function TournamentDetailPage({ params }: { params: { id: string 
   const { id } = params;
   const [isUserRegistered, setIsUserRegistered] = useState(false);
   const [participants, setParticipants] = useState<User[]>([]);
+  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
 
   const { data: tournament, isLoading } = useGetTournamentByIdQuery(id);
   const { data: registrations } = useGetTournamentRegistrationsQuery(id);
   const { data: allUsers } = useGetAllUsersQuery();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const { data: profile } = useGetProfileQuery(undefined, { skip: !isAuthenticated });
+  const { data: admins } = useGetTournamentAdminsQuery(id, { skip: !tournament });
 
   const [registerToTournament] = useRegisterToTournamentMutation();
   const [unregisterFromTournament] = useUnregisterFromTournamentMutation();
   const [updateTournament] = useUpdateTournamentMutation();
 
+
   useEffect(() => {
     if (registrations && profile) {
-      setIsUserRegistered(registrations.includes(profile.id));
+      setIsUserRegistered(registrations.includes(profile.userId));
     }
   }, [registrations, profile]);
 
   useEffect(() => {
     if (registrations && allUsers) {
       const participantsList = allUsers.filter(user =>
-        registrations.includes(user.id)
+        registrations.includes(user.userId)
       );
       setParticipants(participantsList);
     }
@@ -97,7 +101,7 @@ export default function TournamentDetailPage({ params }: { params: { id: string 
       await updateTournament({
         id,
         tournamentData: {
-          status: 'ACTIVE'
+          status: 'Ongoing',
         }
       }).unwrap();
     } catch (error) {
@@ -112,7 +116,7 @@ export default function TournamentDetailPage({ params }: { params: { id: string 
       await updateTournament({
         id,
         tournamentData: {
-          status: 'COMPLETED'
+          status: 'Finished',
         }
       }).unwrap();
     } catch (error) {
@@ -150,22 +154,24 @@ export default function TournamentDetailPage({ params }: { params: { id: string 
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'PENDING':
+      case 'Planned':
         return 'bg-yellow-500 text-white';
-      case 'ACTIVE':
+      case 'Ongoing':
         return 'bg-green-500 text-white';
-      case 'COMPLETED':
+      case 'Finished':
         return 'bg-blue-500 text-white';
-      case 'CANCELED':
+      case 'Cancelled':
         return 'bg-red-500 text-white';
       default:
         return 'bg-gray-500 text-white';
     }
   };
 
-  const isCreator = profile && profile.id === tournament.createdById;
+  const isCreator = profile && profile.userId === tournament.creatorId;
+  const isAdmin = profile && admins && admins.includes(profile.userId);
 
   return (
+    <>
     <div className="container mx-auto px-4 py-8">
       <Button variant="outline" className="mb-6" onClick={() => router.push('/tournaments')}>
         <ArrowLeft className="mr-2 h-4 w-4" />
@@ -205,7 +211,7 @@ export default function TournamentDetailPage({ params }: { params: { id: string 
                 </div>
               </div>
 
-              {tournament.status === 'PENDING' && (
+              {tournament.status === 'Planned' && (
                 <div className="mt-4">
                   {isUserRegistered ? (
                     <Button
@@ -232,10 +238,19 @@ export default function TournamentDetailPage({ params }: { params: { id: string 
                       Start Tournament
                     </Button>
                   )}
+                  {isAdmin && (
+                    <Button
+                      variant="default"
+                      className="ml-4"
+                      onClick={() => setIsConfigModalOpen(true)}
+                    >
+                      Tournament Config
+                    </Button>
+                  )}
                 </div>
               )}
 
-              {tournament.status === 'ACTIVE' && (
+              {tournament.status === 'Ongoing' && (
                 <div className="mt-4">
                   {isUserRegistered && (
                     <Button
@@ -253,6 +268,15 @@ export default function TournamentDetailPage({ params }: { params: { id: string 
                       onClick={completeTournament}
                     >
                       Complete Tournament
+                    </Button>
+                  )}
+                  {isAdmin && (
+                    <Button
+                      variant="default"
+                      className="ml-4"
+                      onClick={() => setIsConfigModalOpen(true)}
+                    >
+                      Tournament Config
                     </Button>
                   )}
                 </div>
@@ -281,7 +305,7 @@ export default function TournamentDetailPage({ params }: { params: { id: string 
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                         {participants.map((user) => (
                           <div
-                            key={user.id}
+                            key={user.userId}
                             className="flex items-center space-x-3 p-3 border rounded-md"
                           >
                             <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
@@ -337,5 +361,11 @@ export default function TournamentDetailPage({ params }: { params: { id: string 
         </div>
       </div>
     </div>
+      <TournamentConfigModal
+        isOpen={isConfigModalOpen}
+        onClose={() => setIsConfigModalOpen(false)}
+        tournament={tournament}
+      />
+    </>
   );
 }

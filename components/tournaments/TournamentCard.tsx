@@ -34,13 +34,13 @@ export function TournamentCard({ tournament, isRegistered, onRegister, onUnregis
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'PENDING':
+      case 'Planned':
         return 'bg-yellow-500 text-white';
-      case 'ACTIVE':
+      case 'Ongoing':
         return 'bg-green-500 text-white';
-      case 'COMPLETED':
+      case 'Finished':
         return 'bg-blue-500 text-white';
-      case 'CANCELED':
+      case 'Cancelled':
         return 'bg-red-500 text-white';
       default:
         return 'bg-gray-500 text-white';
@@ -92,7 +92,7 @@ export function TournamentCard({ tournament, isRegistered, onRegister, onUnregis
           View Details
         </Button>
 
-        {tournament.status === 'PENDING' && (
+        {tournament.status === 'Planned' && (
           isRegistered ? (
             <Button
               variant="destructive"
@@ -112,7 +112,7 @@ export function TournamentCard({ tournament, isRegistered, onRegister, onUnregis
           )
         )}
 
-        {tournament.status === 'ACTIVE' && isRegistered && (
+        {tournament.status === 'Ongoing' && isRegistered && (
           <Button
             variant="default"
             size="sm"

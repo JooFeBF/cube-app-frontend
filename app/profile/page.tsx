@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { 
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -25,7 +25,7 @@ export default function ProfilePage() {
   const dispatch = useAppDispatch();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const { data: profile, isLoading } = useGetProfileQuery(undefined, { skip: !isAuthenticated });
-  
+
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -33,43 +33,43 @@ export default function ProfilePage() {
   const [passwordError, setPasswordError] = useState('');
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  
+
   const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
   const [deleteUser, { isLoading: isDeleting }] = useDeleteUserMutation();
-  
+
   useEffect(() => {
     if (!isAuthenticated) {
       router.push('/login');
     }
   }, [isAuthenticated, router]);
-  
+
   useEffect(() => {
     if (profile) {
       setUsername(profile.userName);
       setEmail(profile.email);
     }
   }, [profile]);
-  
+
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setPasswordError('');
     setUpdateSuccess(false);
-    
+
     if (password && password !== confirmPassword) {
       setPasswordError('Passwords do not match');
       return;
     }
-    
+
     if (!profile) return;
-    
+
     const updateData = {
       userName: username,
       email,
       ...(password ? { password } : {})
     };
-    
+
     try {
-      await updateUser({ id: profile.id.toString(), userData: updateData }).unwrap();
+      await updateUser({ id: profile.userId.toString(), userData: updateData }).unwrap();
       setUpdateSuccess(true);
       setPassword('');
       setConfirmPassword('');
@@ -77,19 +77,19 @@ export default function ProfilePage() {
       console.error('Failed to update profile:', error);
     }
   };
-  
+
   const handleDeleteAccount = async () => {
     if (!profile) return;
-    
+
     try {
-      await deleteUser(profile.id.toString()).unwrap();
+      await deleteUser(profile.userId.toString()).unwrap();
       dispatch(logout());
       router.push('/');
     } catch (error) {
       console.error('Failed to delete account:', error);
     }
   };
-  
+
   if (isLoading || !profile) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -101,7 +101,7 @@ export default function ProfilePage() {
   return (
     <div className="container mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold text-center mb-8">Your Profile</h1>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2">
           <Card>
@@ -116,46 +116,46 @@ export default function ProfilePage() {
                   </AlertDescription>
                 </Alert>
               )}
-              
+
               <form onSubmit={handleUpdateProfile} className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="username">Username</Label>
-                  <Input 
-                    id="username" 
-                    value={username} 
+                  <Input
+                    id="username"
+                    value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input 
-                    id="email" 
-                    type="email" 
-                    value={email} 
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="password">New Password (leave blank to keep current)</Label>
-                  <Input 
-                    id="password" 
-                    type="password" 
-                    value={password} 
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
                 </div>
-                
+
                 {password && (
                   <div className="space-y-2">
                     <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                    <Input 
-                      id="confirmPassword" 
-                      type="password" 
-                      value={confirmPassword} 
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                     />
                     {passwordError && (
@@ -163,7 +163,7 @@ export default function ProfilePage() {
                     )}
                   </div>
                 )}
-                
+
                 <Button type="submit" disabled={isUpdating}>
                   {isUpdating ? 'Updating...' : 'Update Profile'}
                 </Button>
@@ -171,21 +171,21 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
         </div>
-        
+
         <div>
           <Card>
             <CardHeader>
               <CardTitle>Account Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="w-full"
                 onClick={() => router.push('/my-tournaments')}
               >
                 View My Tournaments
               </Button>
-              
+
               <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
                 <DialogTrigger asChild>
                   <Button variant="destructive" className="w-full">
@@ -201,14 +201,14 @@ export default function ProfilePage() {
                     </DialogDescription>
                   </DialogHeader>
                   <DialogFooter>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       onClick={() => setShowDeleteDialog(false)}
                     >
                       Cancel
                     </Button>
-                    <Button 
-                      variant="destructive" 
+                    <Button
+                      variant="destructive"
                       onClick={handleDeleteAccount}
                       disabled={isDeleting}
                     >
@@ -217,9 +217,9 @@ export default function ProfilePage() {
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
-              
-              <Button 
-                variant="outline" 
+
+              <Button
+                variant="outline"
                 className="w-full"
                 onClick={() => {
                   dispatch(logout());

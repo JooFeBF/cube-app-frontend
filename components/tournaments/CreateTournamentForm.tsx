@@ -39,17 +39,17 @@ const createTournamentSchema = z.object({
 type CreateTournamentFormValues = z.infer<typeof createTournamentSchema>;
 
 const modalities = [
-  { id: '3x3', name: '3×3 Cube' },
-  { id: '2x2', name: '2×2 Cube' },
-  { id: '4x4', name: '4×4 Cube' },
-  { id: '5x5', name: '5×5 Cube' },
-  { id: '6x6', name: '6×6 Cube' },
-  { id: '7x7', name: '7×7 Cube' },
-  { id: 'pyra', name: 'Pyraminx' },
-  { id: 'mega', name: 'Megaminx' },
-  { id: 'skewb', name: 'Skewb' },
-  { id: 'sq1', name: 'Square-1' },
-  { id: 'clock', name: 'Clock' },
+  { modalityId: '3x3', name: '3×3 Cube' },
+  { modalityId: '2x2', name: '2×2 Cube' },
+  { modalityId: '4x4', name: '4×4 Cube' },
+  { modalityId: '5x5', name: '5×5 Cube' },
+  { modalityId: '6x6', name: '6×6 Cube' },
+  { modalityId: '7x7', name: '7×7 Cube' },
+  { modalityId: 'pyra', name: 'Pyraminx' },
+  { modalityId: 'mega', name: 'Megaminx' },
+  { modalityId: 'skewb', name: 'Skewb' },
+  { modalityId: 'sq1', name: 'Square-1' },
+  { modalityId: 'clock', name: 'Clock' },
 ];
 
 export function CreateTournamentForm() {
@@ -143,7 +143,7 @@ export function CreateTournamentForm() {
                     </FormControl>
                     <SelectContent>
                       {modalities.map((modality) => (
-                        <SelectItem key={modality.id} value={modality.id}>
+                        <SelectItem key={modality.modalityId} value={modality.modalityId}>
                           {modality.name}
                         </SelectItem>
                       ))}

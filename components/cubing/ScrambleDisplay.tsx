@@ -9,10 +9,10 @@ interface ScrambleDisplayProps {
   totalScrambles: number;
 }
 
-export function ScrambleDisplay({ 
-  scramble, 
-  currentScrambleIndex, 
-  totalScrambles 
+export function ScrambleDisplay({
+  scramble,
+  currentScrambleIndex,
+  totalScrambles
 }: ScrambleDisplayProps) {
   return (
     <Card className="w-full">
@@ -23,7 +23,7 @@ export function ScrambleDisplay({
       </CardHeader>
       <CardContent>
         <p className="font-mono text-sm md:text-base bg-secondary p-3 rounded-md">
-          {scramble.scrambleText}
+          {scramble.scrambleSequence}
         </p>
       </CardContent>
     </Card>

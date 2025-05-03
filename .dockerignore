@@ -1,0 +1,46 @@
+# Git files
+.git
+.gitignore
+
+# Node modules - Installed within Dockerfile
+node_modules
+
+# Build output - Created within Dockerfile
+.next
+
+# Static export output (if used, usually not needed with standalone)
+# out/
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+logs
+npm-debug.log*
+pnpm-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Environment files - Build args or runtime env vars handle these
+.env.local
+.env.development.local
+.env.production.local
+.env.test.local
+!.env.example # Optionally include example env file
+
+# Test reports
+coverage
+junit.xml
+
+# IDE/Editor directories
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+

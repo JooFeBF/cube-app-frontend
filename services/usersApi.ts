@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 export interface User {
-  id: number;
+  userId: number;
   userName: string;
   email: string;
   createdAt: string;
@@ -22,7 +22,7 @@ export interface UpdateUserDto {
 
 export const usersApi = createApi({
   reducerPath: 'usersApi',
-  baseQuery: fetchBaseQuery({ 
+  baseQuery: fetchBaseQuery({
     baseUrl: '/api',
     prepareHeaders: (headers, { getState }) => {
       const token = localStorage.getItem('token');

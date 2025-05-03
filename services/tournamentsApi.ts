@@ -2,7 +2,8 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { User } from './usersApi';
 
 export type ModalityId = '3x3' | '2x2' | '4x4' | '5x5' | '6x6' | '7x7' | 'pyra' | 'mega' | 'skewb' | 'sq1' | 'clock';
-export type TournamentStatus = 'PENDING' | 'ACTIVE' | 'COMPLETED' | 'CANCELED';
+
+export type TournamentStatus = 'Planned' | 'Ongoing' | 'Finished' | 'Cancelled';
 
 export interface Tournament {
   tournamentId: number;
@@ -12,7 +13,7 @@ export interface Tournament {
   status: TournamentStatus;
   createdAt: string;
   updatedAt: string;
-  createdById: number;
+  creatorId: number;
 }
 
 export interface CreateTournamentDto {
@@ -28,24 +29,22 @@ export interface UpdateTournamentDto {
 }
 
 export interface Registration {
-  id: number;
+  registrationId: number;
   userId: number;
   tournamentId: number;
-  createdAt: string;
+  registrationDate: string;
 }
 
 export interface TournamentAdmin {
-  id: number;
   userId: number;
   tournamentId: number;
-  createdAt: string;
 }
 
 export interface Scramble {
-  id: number;
+  scrambleId: number;
   tournamentId: number;
-  scrambleText: string;
-  scrambleOrder: number;
+  scrambleSequence: string;
+  roundNumber: number;
 }
 
 export const tournamentsApi = createApi({

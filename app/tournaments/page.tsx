@@ -11,7 +11,6 @@ import {
   useGetAllTournamentsQuery,
   useRegisterToTournamentMutation,
   useUnregisterFromTournamentMutation,
-  useGetTournamentRegistrationsQuery
 } from '@/services/tournamentsApi';
 import { useAppSelector } from '@/lib/hooks';
 import { selectIsAuthenticated } from '@/features/auth/authSlice';
@@ -31,14 +30,13 @@ export default function TournamentsPage() {
   const filteredTournaments = tournaments?.filter(tournament => {
     const matchesSearch = tournament.tournamentName.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesTab = activeTab === 'all' ||
-      (activeTab === 'upcoming' && tournament.status === 'PENDING') ||
-      (activeTab === 'active' && tournament.status === 'ACTIVE') ||
-      (activeTab === 'completed' && tournament.status === 'COMPLETED') ||
+      (activeTab === 'upcoming' && tournament.status === 'Planned') ||
+      (activeTab === 'active' && tournament.status === 'Ongoing') ||
+      (activeTab === 'completed' && tournament.status === 'Finished') ||
       (activeTab === 'registered' && userRegistrations[tournament.tournamentId.toString()]);
 
     return matchesSearch && matchesTab;
   });
-  console.log(filteredTournaments);
 
   // Fetch registrations for each tournament
   useEffect(() => {
@@ -51,7 +49,7 @@ export default function TournamentsPage() {
             const response = await fetch(`/api/tournaments/${tournament.tournamentId}/registrations`);
             if (response.ok) {
               const userIds = await response.json();
-              registrationData[tournament.tournamentId] = userIds.includes(profile.id);
+              registrationData[tournament.tournamentId] = userIds.includes(profile.userId);
             }
           } catch (error) {
             console.error('Error fetching registrations:', error);

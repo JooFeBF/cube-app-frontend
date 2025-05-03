@@ -35,7 +35,7 @@ export default function MyTournamentsPage() {
   useEffect(() => {
     if (tournaments && profile) {
       // Filter tournaments created by the user
-      const created = tournaments.filter(t => t.createdById === profile.id);
+      const created = tournaments.filter(t => t.creatorId === profile.userId);
       setMyTournaments(created);
 
       // Get tournaments the user is registered for
@@ -43,13 +43,13 @@ export default function MyTournamentsPage() {
         const registered: Tournament[] = [];
 
         for (const tournament of tournaments) {
-          if (tournament.createdById === profile.id) continue; // Skip own tournaments
+          if (tournament.creatorId === profile.userId) continue; // Skip own tournaments
 
           try {
             const response = await fetch(`/api/tournaments/${tournament.tournamentId}/registrations`);
             if (response.ok) {
               const userIds = await response.json();
-              if (userIds.includes(profile.id)) {
+              if (userIds.includes(profile.userId)) {
                 registered.push(tournament);
               }
             }
